@@ -22,8 +22,16 @@ export function useCarqnaChat() {
     }
   }, []);
 
+  const [toolsUsed, setToolsUsed] = useState<any[]>([]);
+  const [fullTrace, setFullTrace] = useState<any[]>([]);
+  const [finalResponseText, setFinalResponseText] = useState<string>("");
+
   const sendMessage = useCallback(
     async (message: string) => {
+      // Clear layout history before a new user submission
+      setToolsUsed([]);
+      setFullTrace([]);
+      setFinalResponseText("");
       if (!threadId) {
         setError("No active session");
         return;
@@ -35,7 +43,21 @@ export function useCarqnaChat() {
         setEvents([]);
 
         await streamChat(message, threadId, (event) => {
+          // This line is doing ALL the heavy lifting! It shares the data with the UI
           setEvents((prev) => [...prev, event]);
+
+          // 1. Push everything natively to the Full Trace panel timeline
+          setFullTrace((prev) => [...prev, event]);
+
+          // 2. Filter tools cleanly for the Tools Used panel matrix
+          if (event.type === 'tool_call' || event.type === 'tool_result') {
+            setToolsUsed((prev) => [...prev, event]);
+          }
+
+          // 3. FIX: Safely store the text string locally inside the hook state if needed
+          if (event.type === 'final_response' && event.content) {
+            setFinalResponseText(event.content);
+          }
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to send message");
@@ -52,6 +74,7 @@ export function useCarqnaChat() {
     events,
     error,
     startSession,
-    sendMessage
+    sendMessage,
+    finalResponseText // Proactively exporting this to make UI rendering effortless!
   };
 }

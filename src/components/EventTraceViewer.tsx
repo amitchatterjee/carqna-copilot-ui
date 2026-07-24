@@ -5,7 +5,8 @@ interface EventTraceViewerProps {
 }
 
 export function EventTraceViewer({ events }: EventTraceViewerProps) {
-  const finalEvent = events.find((e) => e.type === "final_response");
+  const finalResponseEvents = events.filter((e) => e.type === "final_response");
+  const finalEvent = finalResponseEvents[finalResponseEvents.length - 1];
   const toolEvents = events.filter((e) => e.type === "tool_call" || e.type === "tool_result");
   const thinkingEvents = events.filter((e) => e.type === "llm_thinking");
 

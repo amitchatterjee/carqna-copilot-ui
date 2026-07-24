@@ -7,29 +7,24 @@ import { EventTraceViewer } from "./EventTraceViewer";
 export function ChatInterface() {
   const { threadId, isLoading, events, error, startSession, sendMessage } = useCarqnaChat();
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [userMessages, setUserMessages] = useState<string[]>([]);
   const [sessionStarted, setSessionStarted] = useState(false);
 
   const handleStartSession = async () => {
     await startSession("user-123");
     setSessionStarted(true);
-    setMessages([]);
+    setUserMessages([]);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
 
-    setMessages((prev) => [...prev, { role: "user", content: message }]);
+    setUserMessages((prev) => [...prev, message]);
+    const currentMessage = message;
     setMessage("");
 
-    await sendMessage(message);
-
-    // Extract final response from events
-    const finalEvent = events.find((e) => e.type === "final_response");
-    if (finalEvent?.content && typeof finalEvent.content === "string") {
-      setMessages((prev) => [...prev, { role: "assistant", content: finalEvent.content as string }]);
-    }
+    await sendMessage(currentMessage);
   };
 
   return (
@@ -43,54 +38,69 @@ export function ChatInterface() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {!sessionStarted ? (
-          <div className="flex items-center justify-center h-full">
-            <button
-              onClick={handleStartSession}
-              disabled={isLoading}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {isLoading ? "Starting..." : "Start New Session"}
-            </button>
+ {/* Main Content Viewport */}
+<div className="flex-1 overflow-y-auto p-4 space-y-4">
+  {!sessionStarted ? (
+    <div className="flex items-center justify-center h-full">
+      <button
+        onClick={handleStartSession}
+        disabled={isLoading}
+        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+      >
+        Start New Session
+      </button>
+    </div>
+  ) : (
+    <>
+      {/* 1. Render what the human user typed onto the screen */}
+      {userMessages.map((userContent, index) => {
+        // Use the LAST final_response event (a run can emit more than one,
+        // e.g. sub-agent handoffs before the top-level synthesis).
+        const finalResponseEvents = events.filter((e) => e.type === "final_response");
+        const assistantText = finalResponseEvents[finalResponseEvents.length - 1]?.content;
+
+        return (
+          <div key={`turn-${index}`} className="space-y-4 w-full">
+            {/* Human Message Bubble Layout */}
+            <div className="flex justify-end w-full">
+              <div className="max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg bg-blue-600 text-white shadow-sm text-sm">
+                {userContent}
+              </div>
+            </div>
+
+            {/* AI Assistant Message Bubble Layout (Only shows the verified string) */}
+            {index === userMessages.length - 1 && assistantText && (
+              <div className="flex justify-start w-full">
+                <div className="max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg bg-gray-200 text-gray-900 border shadow-sm text-sm whitespace-pre-wrap font-sans">
+                  {assistantText}
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-900"
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              </div>
-            ))}
+        );
+      })}
 
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-200 text-gray-900 px-4 py-2 rounded-lg animate-pulse">
-                  Thinking...
-                </div>
-              </div>
-            )}
+      {/* Thinking Indicator Animation */}
+      {isLoading && (
+        <div className="flex justify-start w-full">
+          <div className="bg-gray-200 text-gray-900 px-4 py-2 rounded-lg animate-pulse shadow-sm text-sm border">
+            Thinking...
+          </div>
+        </div>
+      )}
 
-            {events.length > 0 && <EventTraceViewer events={events} />}
+      {/* Background operational diagnostics panel views remain perfectly active */}
+      {events.length > 0 && <EventTraceViewer events={events} />}
 
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm shadow-sm">
+          {error}
+        </div>
+      )}
+    </>
+  )}
+</div>
+
 
       {/* Input Footer */}
       {sessionStarted && (
@@ -102,12 +112,12 @@ export function ChatInterface() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Ask about cars, insurance, pricing..."
               disabled={isLoading}
-              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-sm"
             />
             <button
               type="submit"
               disabled={isLoading || !message.trim()}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-medium text-sm transition-colors"
             >
               {isLoading ? "..." : "Send"}
             </button>
