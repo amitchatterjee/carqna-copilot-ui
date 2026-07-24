@@ -1,3 +1,4 @@
+import Markdown from "react-markdown";
 import type { GraphEvent } from "@/types/carqna";
 
 interface EventTraceViewerProps {
@@ -14,8 +15,10 @@ export function EventTraceViewer({ events }: EventTraceViewerProps) {
     <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
       {finalEvent && (
         <div className="bg-white p-3 rounded border-l-4 border-green-500">
-          <p className="text-sm text-gray-600">Response</p>
-          <p className="text-base text-gray-900">{finalEvent.content}</p>
+          <p className="text-sm text-gray-600 mb-1">Response</p>
+          <div className="prose prose-sm max-w-none text-gray-900">
+            <Markdown>{finalEvent.content}</Markdown>
+          </div>
         </div>
       )}
 

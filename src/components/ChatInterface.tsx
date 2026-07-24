@@ -52,33 +52,14 @@ export function ChatInterface() {
     </div>
   ) : (
     <>
-      {/* 1. Render what the human user typed onto the screen */}
-      {userMessages.map((userContent, index) => {
-        // Use the LAST final_response event (a run can emit more than one,
-        // e.g. sub-agent handoffs before the top-level synthesis).
-        const finalResponseEvents = events.filter((e) => e.type === "final_response");
-        const assistantText = finalResponseEvents[finalResponseEvents.length - 1]?.content;
-
-        return (
-          <div key={`turn-${index}`} className="space-y-4 w-full">
-            {/* Human Message Bubble Layout */}
-            <div className="flex justify-end w-full">
-              <div className="max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg bg-blue-600 text-white shadow-sm text-sm">
-                {userContent}
-              </div>
-            </div>
-
-            {/* AI Assistant Message Bubble Layout (Only shows the verified string) */}
-            {index === userMessages.length - 1 && assistantText && (
-              <div className="flex justify-start w-full">
-                <div className="max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg bg-gray-200 text-gray-900 border shadow-sm text-sm whitespace-pre-wrap font-sans">
-                  {assistantText}
-                </div>
-              </div>
-            )}
+      {/* Render what the human user typed onto the screen */}
+      {userMessages.map((userContent, index) => (
+        <div key={`turn-${index}`} className="flex justify-end w-full">
+          <div className="max-w-xs lg:max-w-md xl:max-w-lg px-4 py-2 rounded-lg bg-blue-600 text-white shadow-sm text-sm">
+            {userContent}
           </div>
-        );
-      })}
+        </div>
+      ))}
 
       {/* Thinking Indicator Animation */}
       {isLoading && (
