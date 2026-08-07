@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
 
 interface ToolCallPanelProps {
   name: string;
@@ -41,9 +42,11 @@ export function ToolCallPanel({ name, parameters, status, result }: ToolCallPane
           <pre className="overflow-auto">{JSON.stringify(parameters, null, 2)}</pre>
         </div>
         {status === "complete" && (
-          <div className="text-xs font-mono bg-gray-100 p-2 rounded">
-            <p className="text-gray-600 mb-1">Result</p>
-            <pre className="overflow-auto max-h-64">{result}</pre>
+          <div className="text-xs bg-gray-100 p-2 rounded">
+            <p className="text-gray-600 mb-1 font-mono">Result</p>
+            <div className="prose prose-sm max-w-none overflow-auto max-h-64">
+              <Markdown>{result}</Markdown>
+            </div>
           </div>
         )}
       </div>
