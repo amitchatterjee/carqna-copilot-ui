@@ -17,7 +17,7 @@ interface ChatAppProps {
 // unless told otherwise here.
 //
 // Owns the active-session state for the multi-session picker (see
-// carqna-agent/.plans/006-2026-08-11-session-management-plan-INPROG.md):
+// carqna-agent/.plans/006-2026-08-11-session-management-plan-DONE.md):
 // fetches the user's sessions from /api/sessions on mount, and passes the
 // active session's id as CopilotKit's `threadId` -- switching sessions is
 // just changing which id that is, no remount of the fetch logic needed.

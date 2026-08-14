@@ -9,7 +9,7 @@ const agentBaseUrl = process.env.CARQNA_AGENT_URL ?? "http://localhost:8000/";
 // auth0.getAccessToken() (the token never reaches the browser) plus trace
 // context propagation, so these calls land in the same Jaeger trace as
 // whatever triggered them. See
-// carqna-agent/.plans/006-2026-08-11-session-management-plan-INPROG.md for
+// carqna-agent/.plans/006-2026-08-11-session-management-plan-DONE.md for
 // the endpoints this proxies to (GET/POST carqna-agent's /sessions).
 async function callAgent(path: string, init: RequestInit): Promise<Response> {
   const method = init.method ?? "GET";
