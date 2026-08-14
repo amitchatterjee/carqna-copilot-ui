@@ -20,5 +20,5 @@ export default async function Home() {
     );
   }
 
-  return <ChatApp />;
+  return <ChatApp userEmail={session.user.email ?? session.user.sub} />;
 }
